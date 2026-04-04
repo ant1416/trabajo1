@@ -1,5 +1,5 @@
 ---
-title: "trabajo1"
+title: "Tendencias políticas y autoritarismo en América Latina: un análisis comparativo 2018-2023"
 author: "antonia cea y eva kennedy"
 format: html
 date: today
@@ -7,7 +7,7 @@ date: today
 editor: visual
 ---
 
-# trabajo 1 del electivo de r
+# Tendencias políticas y autoritarismo en América Latina: un análisis comparativo 2018-2023
 
 ## problema
 
