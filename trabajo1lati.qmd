@@ -1,0 +1,18 @@
+---
+title: "trabajo1"
+author: "antonia cea y eva kennedy"
+format: html
+date: today
+
+editor: visual
+---
+
+# trabajo 1 del electivo de r
+
+## problema
+
+## hipotesis
+
+## justificacion
+
+## variables
