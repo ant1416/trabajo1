@@ -1,0 +1,207 @@
+---
+title: "Proyecto 1"
+author: "Antonia Cea, Eva Kennedy"
+format: html
+editor: visual
+---
+
+## **Análisis comparativo de las disposiciones políticas de la ciudadanía en Argentina, 2018–2023**
+
+problema de investigación
+
+Desde 2018, Argentina ha experimentado transformaciones políticas y sociales marcadas por una creciente polarización y la emergencia de discursos asociados a orden, seguridad y crítica a las instituciones tradicionales. Paralelamente, distintos estudios han evidenciado un deterioro en la legitimidad de la democracia y un aumento en la tolerancia ciudadana hacia alternativas autoritarias. En este contexto, surge el problema de determinar si estos cambios en el escenario político argentino se vinculan con una mayor adhesión a posturas autoritarias en la ciudadanía, considerando variables como la insatisfacción con la democracia, el malestar económico y la desconfianza institucional.
+
+Hipótesis principal
+
+El fortalecimiento de discursos políticos asociados al orden y la autoridad en Argentina desde 2018 se asocia con una mayor disposición ciudadana a aceptar alternativas autoritarias, especialmente entre individuos con alta insatisfacción democrática y percepción económica negativa.
+
+Justificación
+
+La relevancia de esta investigación radica en comprender por qué, en el contexto argentino actual, ciertos sectores de la población muestran una mayor disposición a adherir a medidas autoritarias, aun cuando estas impliquen restricciones a libertades individuales. Este fenómeno se vuelve especialmente significativo en un escenario marcado por crisis económicas recurrentes, inflación sostenida, incertidumbre social y una creciente demanda por orden y estabilidad.
+
+En este marco, resulta clave analizar cómo se configuran determinadas disposiciones ciudadanas que llevan a aceptar soluciones que, en otras circunstancias, no serían consideradas legítimas. Así, el foco está en explicar cómo este clima social se articula con la emergencia de discursos políticos que enfatizan el orden y la autoridad, sin asumir una relación causal única, sino entendiendo que responde a un entramado más amplio de factores.
+
+En este estudio, se abordarán como ejes centrales la percepción de inseguridad, la desconfianza institucional y la crisis económica, reconociendo que, si bien no agotan la complejidad del fenómeno, constituyen variables clave para su comprensión en el caso argentino.
+
+Hemos decidido analizar los datos del Latinobarómetro entre los años 2018 y 2023 debido a que el año 2018 marca el inicio de un periodo de creciente inestabilidad económica y social en Argentina, caracterizado por crisis cambiarias, aumento de la inflación y deterioro del poder adquisitivo.
+
+Este escenario se ve profundizado por eventos posteriores, como la crisis económica sostenida, el impacto de la pandemia de COVID-19 (2020–2022) y sus consecuencias sobre el empleo y la desigualdad, así como un aumento en la desconfianza hacia las instituciones políticas.
+
+En conjunto, este periodo concentra transformaciones estructurales y subjetivas que permiten observar cómo evolucionan las percepciones ciudadanas en contextos de crisis acumulada y cómo estas se articulan con cambios en la disposición hacia el orden, la autoridad y los proyectos políticos emergentes en Argentina.
+
+Variables
+
+Todas las variables seleccionadas provienen del bloque inicial del cuestionario Latinobarómetro, orientado a medir percepción económica, evaluación del sistema democrático, actitudes hacia el orden político y confianza institucional
+
+Los 3 ejes elegidos son: confianza institucional, percepción económica y preferencia por democracia versus autoritarismo
+
+Para el análisis se construyó una base unificada en la que las variables fueron recodificadas y renombradas para su uso en R. La variable dependiente, **autoritario**, se derivó del ítem de preferencia política del Latinobarómetro, eliminando valores inválidos (-1 y -2) y la categoría ambigua (3), y recodificando en formato dicotómico donde 1 indica disposición a aceptar un régimen autoritario y 0 preferencia por la democracia. Como variables independientes se incluyeron **sat_dem**, que mide el nivel de satisfacción con la democracia (donde valores más altos reflejan mayor insatisfacción), **econ_actual** y **econ_past**, que capturan la evaluación de la situación económica presente y pasada respectivamente, y **year**, que permite observar variaciones temporales entre mediciones. Esta estructura permitió estimar, mediante regresión logística, la probabilidad de adhesión al autoritarismo en función de factores políticos, económicos y del contexto temporal.
+
+```{r}
+library(tidyverse)
+
+setwd("C:/Users/Eva carolina/Desktop/tercero/Electivo R/trabajo1")
+
+data_2018 <- read_delim("Latinobarometro_2018_Argentina_Csv_eng_v1.csv", delim = ";")
+data_2023 <- read_delim("Latinobarometro_2023_Argentina_Csv_eng_v1.csv", delim = ";")
+
+
+glimpse(data_2018)
+glimpse(data_2023)
+```
+
+```{r}
+
+library(tidyverse)dale si quedo que sigue 
+vars_2018 <- data_2018 %>%
+  dplyr::select(P13STGBS.A, P6STGBSC, P7STGBSC, P12STGBS)
+
+vars_2023 <- data_2023 %>%
+  dplyr::select(P11STGBS.A, P5STGBS, P6STGBS, P10STGBS)
+```
+
+```{r}
+vars_2018 <- dplyr::select(data_2018, P13STGBS.A, P6STGBSC, P7STGBSC, P12STGBS)
+
+vars_2023 <- dplyr::select(data_2023, P11STGBS.A, P5STGBS, P6STGBS, P10STGBS)
+```
+
+```{r}
+vars_2018$year <- 2018
+vars_2023$year <- 2023
+```
+
+```{r}
+data_total <- bind_rows(vars_2018, vars_2023)
+```
+
+```{r}
+data_total <- data_total %>%
+  filter(
+    P6STGBSC <= 5 | P5STGBS <= 5,
+    P7STGBSC <= 5 | P6STGBS <= 5,
+    P12STGBS <= 3 | P10STGBS <= 3,
+    P13STGBS.A <= 4 | P11STGBS.A <= 4
+  )
+```
+
+```{r}
+vars_2018 <- vars_2018 %>%
+  mutate(
+    econ_actual = P6STGBSC,
+    econ_past = P7STGBSC,
+    autoritarismo = P12STGBS,
+    sat_dem = P13STGBS.A
+  )
+
+vars_2023 <- vars_2023 %>%
+  mutate(
+    econ_actual = P5STGBS,
+    econ_past = P6STGBS,
+    autoritarismo = P10STGBS,
+    sat_dem = P11STGBS.A
+  )
+
+glimpse(vars_2018)
+glimpse(vars_2023)
+```
+
+```{r}
+data_total <- bind_rows(vars_2018, vars_2023)
+glimpse(data_total)
+
+table(data_total$year)
+```
+
+```{r}
+data_total <- data_total %>%
+  filter(
+    !is.na(econ_actual),
+    !is.na(econ_past),
+    !is.na(autoritarismo),
+    !is.na(sat_dem)
+  )
+
+table(data_total$year)
+```
+
+```{r}
+data_total$autoritario <- ifelse(data_total$autoritarismo == 2, 1, 0)
+
+table(data_total$autoritario)
+
+
+modelo <- glm(
+  autoritario ~ econ_actual + econ_past + sat_dem + year,
+  data = data_total,
+  family = binomial
+)
+
+names(data_total)
+```
+
+```{r}
+modelo <- glm(autoritario ~ econ_actual + econ_past + sat_dem + year, data = data_total, family = binomial)
+
+summary(modelo)
+```
+
+```{r}
+data_total$autoritario <- ifelse(data_total$autoritarismo == 2, 1, 0)
+
+table(data_total$autoritarismo)
+
+
+data_total <- data_total %>%
+  filter(autoritarismo > 0)
+
+data_total <- data_total %>%
+  filter(autoritarismo != 3)
+
+data_total$autoritario <- ifelse(data_total$autoritarismo == 2, 1, 0)
+
+table(data_total$autoritarismo)
+```
+
+```{r}
+modelo <- glm(autoritario ~ econ_actual + econ_past + sat_dem + year, data = data_total, family = binomial)
+
+summary(modelo)
+```
+
+```{r}
+prop.table(table(data_total$sat_dem))
+
+data_total <- data_total %>% filter(autoritarismo > 0 & autoritarismo != 3 & sat_dem > 0)
+
+table(data_total$sat_dem)
+```
+
+```{r}
+modelo <- glm(autoritario ~ econ_actual + econ_past + sat_dem + year, data = data_total, family = binomial)
+
+summary(modelo)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+data_total %>%
+  mutate(prob = predict(modelo, type = "response")) %>%
+  group_by(sat_dem) %>%
+  summarise(prob_media = mean(prob)) %>%
+  ggplot(aes(x = sat_dem, y = prob_media)) +
+  geom_line(size = 1.5) +
+  geom_point(size = 3) +
+  labs(
+    title = "Insatisfacción con la democracia y autoritarismo",
+    x = "Nivel de insatisfacción con la democracia",
+    y = "Probabilidad de autoritarismo"
+  ) +
+  theme_minimal()
+
+
+```
+
+Los resultados muestran que la disposición al autoritarismo en Argentina se explica principalmente por factores políticos más que económicos. En particular, la insatisfacción con la democracia emerge como un predictor fuerte y significativo, indicando que a medida que disminuye la confianza en el sistema democrático, aumenta la aceptación de alternativas autoritarias. Asimismo, se observa una tendencia creciente en el tiempo, lo que sugiere un fortalecimiento progresivo de estas actitudes. En contraste, las percepciones sobre la situación económica, tanto actual como pasada, no presentan un efecto significativo, lo que refuerza la idea de que el malestar democrático —más que las condiciones económicas— es el principal motor de la adhesión al autoritarismo en el caso analizado.
